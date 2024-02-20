@@ -21,13 +21,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/Sora233/datastructure/bst"
-	"github.com/Sora233/datastructure/bst/avl"
-	"github.com/Sora233/datastructure/entry"
+	"github.com/Sora233/datastructure/treemap"
 )
 
 func main() {
-	m := bst.AsMap[int, int](avl.New[entry.KV[int, int]](entry.OrderedKeyLessCompareF[int, int]()))
+	m := treemap.NewMap[int, int]()
 	m.Put(1, 1)
 	m.Put(2, 2)
 
@@ -51,7 +49,7 @@ func main() {
 // You can use the following code to iterate the treemap
 // see https://tip.golang.org/wiki/RangefuncExperiment for detail.
 func mainGo1_22() {
-	m := bst.AsMap[int, int](avl.New[entry.KV[int, int]](entry.OrderedKeyLessCompareF[int, int]()))
+	m := treemap.NewMap[int, int]()
 	m.Put(1, 1)
 	m.Put(2, 2)
 
@@ -67,6 +65,7 @@ func mainGo1_22() {
 		}
 	}
 }
+
 ```
 
 ### benchmark
