@@ -1,11 +1,11 @@
 package bst
 
 import (
-	"github.com/Sora233/datastructure/bst"
 	"github.com/Sora233/datastructure/bst/avl"
 	"github.com/Sora233/datastructure/bst/treap"
 	"github.com/Sora233/datastructure/compare"
 	"github.com/Sora233/datastructure/entry"
+	"github.com/Sora233/datastructure/treemap"
 	"github.com/stretchr/testify/suite"
 	"math/rand"
 	"testing"
@@ -57,7 +57,7 @@ func (s *stdMap[K, V]) Clear() {
 	s.m = make(map[K]V)
 }
 
-func newStdMap[K compare.Ordered, V any]() bst.TreeMap[K, V] {
+func newStdMap[K compare.Ordered, V any]() treemap.TreeMap[K, V] {
 	return &stdMap[K, V]{
 		m: make(map[K]V),
 	}
@@ -65,7 +65,7 @@ func newStdMap[K compare.Ordered, V any]() bst.TreeMap[K, V] {
 
 type MapIntStringSuite struct {
 	suite.Suite
-	maps   []bst.TreeMap[int, string]
+	maps   []treemap.TreeMap[int, string]
 	maxKey []int
 	N      int
 }
@@ -74,8 +74,8 @@ func (s *MapIntStringSuite) SetupTest() {
 	s.maxKey = []int{1, 10, 100, 10000, 1000000, 100000000}
 	s.N = 300000
 	s.maps = append(s.maps, newStdMap[int, string]())
-	s.maps = append(s.maps, bst.AsMap[int, string](treap.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
-	s.maps = append(s.maps, bst.AsMap[int, string](avl.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
+	s.maps = append(s.maps, treemap.AsMap[int, string](treap.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
+	s.maps = append(s.maps, treemap.AsMap[int, string](avl.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
 }
 
 func (s *MapIntStringSuite) TearDownSubTest() {
@@ -90,7 +90,7 @@ type op[K compare.Ordered, V any] struct {
 	value V
 }
 
-func (o *op[K, V]) do(m bst.TreeMap[K, V]) (any, any) {
+func (o *op[K, V]) do(m treemap.TreeMap[K, V]) (any, any) {
 	switch o.op {
 	case "get":
 		a1, a2 := m.Get(o.key)

@@ -1,6 +1,9 @@
-package bst
+package treemap
 
 import (
+	"github.com/Sora233/datastructure/bst"
+	"github.com/Sora233/datastructure/bst/avl"
+	"github.com/Sora233/datastructure/compare"
 	"github.com/Sora233/datastructure/entry"
 )
 
@@ -18,7 +21,7 @@ type TreeMap[K any, V any] interface {
 }
 
 type treeMap[K any, V any] struct {
-	tree BinarySearchTree[entry.KV[K, V]]
+	tree bst.BinarySearchTree[entry.KV[K, V]]
 }
 
 func (t *treeMap[K, V]) Put(key K, value V) (old V, replaced bool) {
@@ -67,8 +70,28 @@ func (t *treeMap[K, V]) Items() func(yield func(K, V) bool) {
 	}
 }
 
+func NewMap[K compare.Ordered, V any]() TreeMap[K, V] {
+	return AsMap[K, V](avl.New[entry.KV[K, V]](entry.OrderedKeyLessCompareF[K, V]()))
+}
+
+func NewMapWithLess[K any, V any](less compare.Less[K]) TreeMap[K, V] {
+	return AsMap[K, V](
+		avl.New(
+			entry.KeyCompareWrapper[K, V](compare.LessF[K](less)),
+		),
+	)
+}
+
+func NewMapWithCompare[K any, V any](keyCompare compare.ICompare[K]) TreeMap[K, V] {
+	return AsMap[K, V](
+		avl.New(
+			entry.KeyCompareWrapper[K, V](keyCompare),
+		),
+	)
+}
+
 // AsMap Create a TreeMap base on the BinarySearchTree
-func AsMap[K any, V any](tree BinarySearchTree[entry.KV[K, V]]) TreeMap[K, V] {
+func AsMap[K any, V any](tree bst.BinarySearchTree[entry.KV[K, V]]) TreeMap[K, V] {
 	if tree == nil {
 		panic("AsMap: tree is nil")
 	}

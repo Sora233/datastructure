@@ -48,7 +48,7 @@ func main() {
 }
 
 // As Go1.22 introduced the new feature "range-over-function iterators"
-// You can use the following code to iterate the map
+// You can use the following code to iterate the treemap
 // see https://tip.golang.org/wiki/RangefuncExperiment for detail.
 func mainGo1_22() {
 	m := bst.AsMap[int, int](avl.New[entry.KV[int, int]](entry.OrderedKeyLessCompareF[int, int]()))

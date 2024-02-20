@@ -1,4 +1,10 @@
-package bst
+package treeset
+
+import (
+	"github.com/Sora233/datastructure/bst"
+	"github.com/Sora233/datastructure/bst/avl"
+	"github.com/Sora233/datastructure/compare"
+)
 
 type TreeSet[T any] interface {
 	Put(elem T) (old T, replaced bool)
@@ -11,7 +17,7 @@ type TreeSet[T any] interface {
 }
 
 type treeSet[T any] struct {
-	tree BinarySearchTree[T]
+	tree bst.BinarySearchTree[T]
 }
 
 func (t *treeSet[T]) Put(elem T) (old T, replaced bool) {
@@ -50,8 +56,20 @@ func (t *treeSet[T]) Items() func(yield func(T) bool) {
 	}
 }
 
+func NewSet[T compare.Ordered]() TreeSet[T] {
+	return AsSet[T](avl.New[T](compare.OrderedLessCompareF[T]()))
+}
+
+func NewSetWithLess[T any](less compare.Less[T]) TreeSet[T] {
+	return AsSet[T](avl.New[T](compare.LessF[T](less)))
+}
+
+func NewSetWithCompare[T any](cmp compare.ICompare[T]) TreeSet[T] {
+	return AsSet[T](avl.New[T](cmp))
+}
+
 // AsSet Create a TreeSet base on the BinarySearchTree
-func AsSet[T any](tree BinarySearchTree[T]) TreeSet[T] {
+func AsSet[T any](tree bst.BinarySearchTree[T]) TreeSet[T] {
 	s := &treeSet[T]{
 		tree: tree,
 	}

@@ -15,6 +15,12 @@ func Key[K any, V any](key K) KV[K, V] {
 	return KV[K, V]{Key: key}
 }
 
+func KeyCompareWrapper[K any, V any](cmp compare.ICompare[K]) compare.ICompare[KV[K, V]] {
+	return compare.WithFunc[KV[K, V]](func(e KV[K, V], e2 KV[K, V]) compare.Result {
+		return cmp.Compare(e.Key, e2.Key)
+	})
+}
+
 func OrderedKeyLessCompare[K compare.Ordered, V any](a, b KV[K, V]) compare.Result {
 	return compare.OrderedLessCompare(a.Key, b.Key)
 }
