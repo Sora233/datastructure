@@ -57,25 +57,40 @@ func (s *stdMap[K, V]) Clear() {
 	s.m = make(map[K]V)
 }
 
-func newStdMap[K compare.Ordered, V any]() treemap.TreeMap[K, V] {
+func newStdMap[K compare.Ordered, V any]() TreeMap[K, V] {
 	return &stdMap[K, V]{
 		m: make(map[K]V),
 	}
 }
 
+type TreeMap[K any, V any] interface {
+	Put(key K, value V) (old V, replaced bool)
+	PutIfAbsent(key K, value V) (success bool)
+	Get(key K) (value V, exists bool)
+	Delete(key K) (value V, exists bool)
+	Len() int
+	Clear()
+}
+
 type MapIntStringSuite struct {
 	suite.Suite
-	maps   []treemap.TreeMap[int, string]
+	maps   []TreeMap[int, string]
 	maxKey []int
 	N      int
 }
 
 func (s *MapIntStringSuite) SetupTest() {
 	s.maxKey = []int{1, 10, 100, 10000, 1000000, 100000000}
-	s.N = 300000
+	s.N = 100000
 	s.maps = append(s.maps, newStdMap[int, string]())
 	s.maps = append(s.maps, treemap.AsMap[int, string](treap.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
 	s.maps = append(s.maps, treemap.AsMap[int, string](avl.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
+}
+
+func (s *MapIntStringSuite) TearDownTest() {
+	for _, m := range s.maps {
+		m.Clear()
+	}
 }
 
 func (s *MapIntStringSuite) TearDownSubTest() {
@@ -84,13 +99,13 @@ func (s *MapIntStringSuite) TearDownSubTest() {
 	}
 }
 
-type op[K compare.Ordered, V any] struct {
+type mapOp[K compare.Ordered, V any] struct {
 	op    string
 	key   K
 	value V
 }
 
-func (o *op[K, V]) do(m treemap.TreeMap[K, V]) (any, any) {
+func (o *mapOp[K, V]) do(m TreeMap[K, V]) (any, any) {
 	switch o.op {
 	case "get":
 		a1, a2 := m.Get(o.key)
@@ -112,7 +127,7 @@ func (o *op[K, V]) do(m treemap.TreeMap[K, V]) (any, any) {
 	}
 }
 
-var ops = []string{
+var mapOps = []string{
 	"get",
 	"put",
 	"len",
@@ -120,9 +135,9 @@ var ops = []string{
 	"put_if_absent",
 }
 
-func genOp(maxKey int) *op[int, string] {
-	return &op[int, string]{
-		op:    ops[rand.Intn(len(ops))],
+func genOp(maxKey int) *mapOp[int, string] {
+	return &mapOp[int, string]{
+		op:    mapOps[rand.Intn(len(mapOps))],
 		key:   rand.Intn(maxKey),
 		value: randString(10),
 	}

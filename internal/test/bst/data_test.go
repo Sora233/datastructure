@@ -44,6 +44,12 @@ func (s *BSTDataSuite) SetupTest() {
 	})
 }
 
+func (s *BSTDataSuite) TearDownTest() {
+	for _, t := range s.treeSet {
+		t.tree.Clear()
+	}
+}
+
 func (s *BSTDataSuite) TearDownSubTest() {
 	for _, t := range s.treeSet {
 		t.tree.Clear()
@@ -109,17 +115,17 @@ func (s *BSTDataSuite) runCase(tree bst.BinarySearchTree[entry.Duplicate[int]], 
 			w.WriteRune('\n')
 			cnt++
 		case 4:
-			ent, _ := tree.RankNth(x)
+			ent, _ := tree.RankNth(x).Get()
 			w.WriteString(strconv.Itoa(ent.Key))
 			w.WriteRune('\n')
 			cnt++
 		case 5:
-			ent, _ := tree.Prev(entry.NewDuplicate(x))
+			ent, _ := tree.Prev(entry.NewDuplicate(x)).Get()
 			w.WriteString(strconv.Itoa(ent.Key))
 			w.WriteRune('\n')
 			cnt++
 		case 6:
-			ent, _ := tree.Next(entry.NewDuplicate(x))
+			ent, _ := tree.Next(entry.NewDuplicate(x)).Get()
 			w.WriteString(strconv.Itoa(ent.Key))
 			w.WriteRune('\n')
 			cnt++

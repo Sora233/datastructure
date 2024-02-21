@@ -7,11 +7,25 @@ import (
 
 // Node is the node of AVL tree
 type Node[T any] struct {
-	l, r     *Node[T]
+	fa, l, r *Node[T]
 	val      T
 	countval bst.Countable
 	size     int
 	height   int
+}
+
+func (node *Node[T]) getFa() *Node[T] {
+	if node == nil {
+		return nil
+	}
+	return node.fa
+}
+
+func (node *Node[T]) setFa(fa *Node[T]) {
+	if node == nil || node.fa == fa {
+		return
+	}
+	node.fa = fa
 }
 
 func (node *Node[T]) setVal(data T, cc bool) {
@@ -30,6 +44,8 @@ func (node *Node[T]) pushUp() {
 		return
 	}
 	node.size = node.getCount() + node.l.getSize() + node.r.getSize()
+	node.l.setFa(node)
+	node.r.setFa(node)
 	if node.l.getHeight() > node.r.getHeight() {
 		node.height = 1 + node.l.getHeight()
 	} else {
@@ -82,9 +98,13 @@ func (node *Node[T]) leftRotate() *Node[T] {
 	if node == nil {
 		return nil
 	}
+	fa := node.fa
 	rNode := node.r
 	node.r = rNode.l
+	rNode.l.setFa(node)
 	rNode.l = node
+	node.setFa(rNode)
+	rNode.setFa(fa)
 
 	node.pushUp()
 	rNode.pushUp()
@@ -99,10 +119,13 @@ func (node *Node[T]) rightRotate() *Node[T] {
 	if node == nil {
 		return nil
 	}
-
+	fa := node.fa
 	lNode := node.l
 	node.l = lNode.r
+	lNode.r.setFa(node)
 	lNode.r = node
+	node.setFa(lNode)
+	lNode.setFa(fa)
 
 	node.pushUp()
 	lNode.pushUp()

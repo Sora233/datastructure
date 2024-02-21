@@ -18,6 +18,10 @@ type TreeMap[K any, V any] interface {
 	Clear()
 	KeySet() func(yield func(K) bool)
 	Items() func(yield func(K, V) bool)
+	Next(key K) (value V, exists bool)
+	Prev(key K) (value V, exists bool)
+	Rank(key K) int
+	RankNth(n int) (key K, value V, exists bool)
 }
 
 type treeMap[K any, V any] struct {
@@ -35,7 +39,7 @@ func (t *treeMap[K, V]) PutIfAbsent(key K, value V) (success bool) {
 	return
 }
 func (t *treeMap[K, V]) Get(key K) (value V, exists bool) {
-	e, exists := t.tree.Find(entry.Key[K, V](key))
+	e, exists := t.tree.Find(entry.Key[K, V](key)).Get()
 	value = e.Value
 	return
 }
@@ -68,6 +72,26 @@ func (t *treeMap[K, V]) Items() func(yield func(K, V) bool) {
 			return yield(e.Key, e.Value)
 		})
 	}
+}
+
+func (t *treeMap[K, V]) Next(key K) (value V, exists bool) {
+	e, exists := t.tree.Next(entry.Key[K, V](key)).Get()
+	value = e.Value
+	return
+}
+func (t *treeMap[K, V]) Prev(key K) (value V, exists bool) {
+	e, exists := t.tree.Prev(entry.Key[K, V](key)).Get()
+	value = e.Value
+	return
+}
+func (t *treeMap[K, V]) Rank(key K) int {
+	return t.tree.Rank(entry.Key[K, V](key))
+}
+func (t *treeMap[K, V]) RankNth(n int) (key K, value V, exists bool) {
+	e, exists := t.tree.RankNth(n).Get()
+	key = e.Key
+	value = e.Value
+	return
 }
 
 func NewMap[K compare.Ordered, V any]() TreeMap[K, V] {

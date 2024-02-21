@@ -40,40 +40,40 @@ type BinarySearchTree[T any] interface {
 	DeleteIf(data T, f datastructure.ConditionFunc[T]) (success bool)
 
 	// Find return the data and true if the data exists in the tree.
-	// if the data doesn't exist, return the zero value and false.
-	Find(data T) (res T, exists bool)
+	// if the data doesn't exist, return a Iterator with zero value and false.
+	Find(data T) Iterator[T]
 
 	// Exists return true if the data exists in the tree.
 	Exists(data T) (exists bool)
 
-	// Min return the minimum element in the tree.
-	Min() (res T, exists bool)
-	// Max return the maximum element in the tree.
-	Max() (res T, exists bool)
+	// Min return the minimum Iterator in the tree.
+	Min() Iterator[T]
+	// Max return the maximum Iterator in the tree.
+	Max() Iterator[T]
 
 	// Prev return the maximum element E that satisfies E < data.
 	// If no such element, return zero value and false.
-	Prev(data T) (res T, exists bool)
+	Prev(data T) Iterator[T]
 
 	// Next return the minimum element E that satisfies E > data,
-	// If no such element, return zero value and false.
-	Next(data T) (res T, exists bool)
+	// If no such element, return a Iterator with zero value and false.
+	Next(data T) Iterator[T]
 
 	// FindOrNext return the minimum element E that satisfies E >= data,
-	// If no such element, return zero value and false.
-	FindOrNext(data T) (res T, exists bool)
+	// If no such element, return a Iterator with zero value and false.
+	FindOrNext(data T) Iterator[T]
 
 	// FindOrPrev return the maximum element E that satisfies E <= data,
-	// If no such element, return zero value and false.
-	FindOrPrev(data T) (res T, exists bool)
+	// If no such element, return a Iterator with zero value and false.
+	FindOrPrev(data T) Iterator[T]
 
 	// Rank return the rank of data in the tree.
 	// if the rank of data is N, it means there are (N-1) elements is smaller data
 	// if data is the minimum element, the rank is 1
 	Rank(data T) int
 
-	// RankNth return the element that has the rank-th value.
-	RankNth(rank int) (res T, exists bool)
+	// RankNth return the iterator that has the rank-th value.
+	RankNth(rank int) Iterator[T]
 
 	// Range iterate over all elements in the tree in ascending order.
 	// The iteration will be interrupted if f returns false.

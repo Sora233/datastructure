@@ -31,7 +31,7 @@ func (t *treeSet[T]) PutIfAbsent(elem T) (success bool) {
 }
 
 func (t *treeSet[T]) Get(elem T) (res T, exists bool) {
-	res, exists = t.tree.Find(elem)
+	res, exists = t.tree.Find(elem).Get()
 	return
 }
 

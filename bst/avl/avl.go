@@ -102,7 +102,7 @@ func (t *AVL[T]) DeleteIf(data T, f datastructure.ConditionFunc[T]) (success boo
 	return
 }
 
-func (t *AVL[T]) Find(data T) (res T, exists bool) {
+func (t *AVL[T]) Find(data T) bst.Iterator[T] {
 	enterLeft := func(root *Node[T]) bool {
 		return t.cmp.Compare(root.val, data).GT()
 	}
@@ -112,46 +112,37 @@ func (t *AVL[T]) Find(data T) (res T, exists bool) {
 	enterRight := func(root *Node[T]) bool {
 		return t.cmp.Compare(root.val, data).LT()
 	}
+	var node *Node[T]
 	t.root.postorder(enterLeft, enterRight, enterCur, func(n *Node[T]) bool {
-		res = n.val
-		exists = true
+		node = n
 		return false
 	})
-	return
+	return t.wrapIterator(node)
 }
 
 func (t *AVL[T]) Exists(data T) (exists bool) {
-	_, exists = t.Find(data)
+	it := t.Find(data)
+	_, exists = it.Get()
 	return
 }
 
-func (t *AVL[T]) Min() (res T, exists bool) {
-	if t.Empty() {
-		return
-	}
+func (t *AVL[T]) Min() bst.Iterator[T] {
 	node := t.root
-	exists = true
-	for node.l != nil {
+	for node != nil && node.l != nil {
 		node = node.l
 	}
-	res = node.getValue()
-	return
+	return t.wrapIterator(node)
 }
 
-func (t *AVL[T]) Max() (res T, exists bool) {
-	if t.Empty() {
-		return
-	}
+func (t *AVL[T]) Max() bst.Iterator[T] {
 	node := t.root
-	exists = true
-	for node.r != nil {
+	for node != nil && node.r != nil {
 		node = node.r
 	}
-	res = node.getValue()
-	return
+	return t.wrapIterator(node)
 }
 
-func (t *AVL[T]) Prev(data T) (res T, exists bool) {
+func (t *AVL[T]) Prev(data T) bst.Iterator[T] {
 	enterRight := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).LT()
 	}
@@ -161,20 +152,20 @@ func (t *AVL[T]) Prev(data T) (res T, exists bool) {
 	enterCur := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).LT()
 	}
+	var node *Node[T]
 	t.root.reversePostorder(
 		enterRight,
 		enterLeft,
 		enterCur,
 		func(n *Node[T]) bool {
-			res = n.val
-			exists = true
+			node = n
 			return false
 		},
 	)
-	return
+	return t.wrapIterator(node)
 }
 
-func (t *AVL[T]) Next(data T) (res T, exists bool) {
+func (t *AVL[T]) Next(data T) bst.Iterator[T] {
 	enterLeft := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).GT()
 	}
@@ -184,66 +175,72 @@ func (t *AVL[T]) Next(data T) (res T, exists bool) {
 	enterCur := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).GT()
 	}
+	var node *Node[T]
 	t.root.postorder(
 		enterLeft,
 		enterRight,
 		enterCur,
 		func(n *Node[T]) bool {
-			res = n.val
-			exists = true
+			node = n
 			return false
 		},
 	)
-	return
+	return t.wrapIterator(node)
 }
 
-func (t *AVL[T]) FindOrNext(data T) (res T, exists bool) {
+func (t *AVL[T]) FindOrNext(data T) bst.Iterator[T] {
 	enterLeft := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).GT()
 	}
 	enterRight := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).LT()
 	}
+	enterCur := func(node *Node[T]) bool {
+		return t.cmp.Compare(node.getValue(), data).GTE()
+	}
+	var node *Node[T]
 	t.root.postorder(
 		enterLeft,
 		enterRight,
-		trueNodeConditionFunc[T],
+		enterCur,
 		func(n *Node[T]) bool {
-			res = n.val
-			exists = true
+			node = n
 			return false
 		},
 	)
-	return
+	return t.wrapIterator(node)
 }
 
 // FindOrPrev return the maximum element E that satisfies E <= data,
 // If no such element, return zero value and false.
-func (t *AVL[T]) FindOrPrev(data T) (res T, exists bool) {
+func (t *AVL[T]) FindOrPrev(data T) bst.Iterator[T] {
 	enterRight := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).LT()
 	}
 	enterLeft := func(node *Node[T]) bool {
 		return t.cmp.Compare(node.getValue(), data).GT()
 	}
+	enterCur := func(node *Node[T]) bool {
+		return t.cmp.Compare(node.getValue(), data).LTE()
+	}
+	var node *Node[T]
 	t.root.reversePostorder(
 		enterRight,
 		enterLeft,
-		trueNodeConditionFunc[T],
+		enterCur,
 		func(n *Node[T]) bool {
-			res = n.val
-			exists = true
+			node = n
 			return false
 		},
 	)
-	return
+	return t.wrapIterator(node)
 }
 
 func (t *AVL[T]) Rank(data T) int {
 	return t.rank(t.root, data)
 }
 
-func (t *AVL[T]) RankNth(rank int) (res T, exists bool) {
+func (t *AVL[T]) RankNth(rank int) bst.Iterator[T] {
 	return t.rankNth(t.root, rank)
 }
 
@@ -382,16 +379,14 @@ func (t *AVL[T]) delete(root *Node[T], data T, f nodeConditionFunc[T]) *Node[T] 
 	return root
 }
 
-func (t *AVL[T]) rankNth(root *Node[T], rank int) (res T, exists bool) {
+func (t *AVL[T]) rankNth(root *Node[T], rank int) bst.Iterator[T] {
 	if root == nil {
-		return
+		return t.wrapIterator(root)
 	}
 	if rank <= root.l.getSize() {
 		return t.rankNth(root.l, rank)
 	} else if rank <= root.l.getSize()+root.getCount() {
-		res = root.val
-		exists = true
-		return
+		return t.wrapIterator(root)
 	} else {
 		return t.rankNth(root.r, rank-root.l.getSize()-root.getCount())
 	}
@@ -412,4 +407,8 @@ func (t *AVL[T]) rank(root *Node[T], data T) int {
 	default:
 		panic("impossible")
 	}
+}
+
+func (t *AVL[T]) wrapIterator(node *Node[T]) *Iterator[T] {
+	return &Iterator[T]{node: node}
 }

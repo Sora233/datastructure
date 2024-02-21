@@ -12,13 +12,6 @@ import (
 )
 
 const (
-	opInsert = iota
-	opFind
-	opDelete
-	opRange
-	opRank
-	opRankNth
-
 	Max = 1000000
 )
 

@@ -6,6 +6,7 @@ import (
 	"github.com/Sora233/datastructure/bst/treap"
 	"github.com/Sora233/datastructure/compare"
 	"github.com/stretchr/testify/suite"
+	"math/rand"
 	"testing"
 )
 
@@ -32,6 +33,12 @@ func (s *BSTIntSuite) SetupTest() {
 		name: "AVL",
 		tree: avl.New[int](compare.OrderedLessCompareF[int]()),
 	})
+}
+
+func (s *BSTIntSuite) TearDownTest() {
+	for _, st := range s.treeSet {
+		st.tree.Clear()
+	}
 }
 
 func (s *BSTIntSuite) TearDownSubTest() {
@@ -194,20 +201,148 @@ func (s *BSTIntSuite) TestPrevAndNextAndFindOrNextAndFindOrPrev() {
 				}
 				var actual [4][2]any
 				for _, data := range tc.data {
-					r1, r2 := ts.tree.Prev(data)
+					r1, r2 := ts.tree.Prev(data).Get()
 					actual[0] = [2]any{r1, r2}
-					r1, r2 = ts.tree.Next(data)
+					r1, r2 = ts.tree.Next(data).Get()
 					actual[1] = [2]any{r1, r2}
-					r1, r2 = ts.tree.FindOrNext(data)
+					r1, r2 = ts.tree.FindOrNext(data).Get()
 					actual[2] = [2]any{r1, r2}
-					r1, r2 = ts.tree.FindOrPrev(data)
+					r1, r2 = ts.tree.FindOrPrev(data).Get()
 					actual[3] = [2]any{r1, r2}
 				}
 			}
 		})
 	}
+}
+
+var bstOps = []string{
+	"Size",
+	"Insert",
+	"InsertOrIgnore",
+	"Delete",
+	"DeleteIf",
+	"Find",
+	"Exists",
+	"Min",
+	"Max",
+	"Prev",
+	"Next",
+	"FindOrNext",
+	"FindOrPrev",
+	"Rank",
+	"RankNth",
+	"Range",
+	"RangeS",
+	"RangeSE",
+	"RangeE",
+}
+
+type bstOp struct {
+	op string
+	p1 int
+	p2 int
+}
+
+func (op *bstOp) do(tree bst.BinarySearchTree[int]) (any, any) {
+	switch op.op {
+	case "Size":
+		return tree.Size(), nil
+	case "Insert":
+		return tree.Insert(op.p1)
+	case "InsertOrIgnore":
+		return tree.InsertOrIgnore(op.p1), nil
+	case "Delete":
+		return tree.Delete(op.p1)
+	case "DeleteIf":
+		return tree.DeleteIf(op.p1, func(i int) bool {
+			return op.p2%2 == 0
+		}), nil
+	case "Find":
+		return tree.Find(op.p1).Get()
+	case "Exists":
+		return tree.Exists(op.p1), nil
+	case "Min":
+		return tree.Min().Get()
+	case "Max":
+		return tree.Max().Get()
+	case "Prev":
+		return tree.Prev(op.p1).Get()
+	case "Next":
+		return tree.Next(op.p1).Get()
+	case "FindOrNext":
+		return tree.FindOrNext(op.p1).Get()
+	case "FindOrPrev":
+		return tree.FindOrPrev(op.p1).Get()
+	case "Rank":
+		return tree.Rank(op.p1), nil
+	case "RankNth":
+		return tree.RankNth(op.p1).Get()
+	case "Range":
+		var data []int
+		tree.Range(func(i int) bool {
+			data = append(data, i)
+			return true
+		})
+		return data, nil
+	case "RangeS":
+		var data []int
+		tree.RangeS(op.p1, func(i int) bool {
+			data = append(data, i)
+			return true
+		})
+		return data, nil
+	case "RangeSE":
+		var data []int
+		tree.RangeSE(op.p1, op.p2, func(i int) bool {
+			data = append(data, i)
+			return true
+		})
+		return data, nil
+	case "RangeE":
+		var data []int
+		tree.RangeE(op.p1, func(i int) bool {
+			data = append(data, i)
+			return true
+		})
+		return data, nil
+	default:
+		panic("impossible")
+	}
+}
+
+func (s *BSTIntSuite) TestFuzzy() {
+	for _, maxKey := range []int{10, 10000, 1000000} {
+		for _, ts := range s.treeSet {
+			ts.tree.Clear()
+		}
+		for i := 0; i < 300000; i++ {
+			op := genBstOps(maxKey)
+			var results [][2]any
+			for _, ts := range s.treeSet {
+				r1, r2 := op.do(ts.tree)
+				results = append(results, [2]any{r1, r2})
+			}
+			for i := 1; i < len(results); i++ {
+				s.EqualValuesf(results[0], results[i], "%v not match with %v, op %v, p %v %v", s.treeSet[0].name, s.treeSet[i].name, op.op, op.p1, op.p2)
+			}
+		}
+	}
 
 }
+
+func genBstOps(maxKey int) *bstOp {
+	op := &bstOp{
+		op: bstOps[rand.Intn(len(bstOps))],
+		p1: rand.Intn(maxKey),
+		p2: rand.Intn(maxKey),
+	}
+	if op.p1 > op.p2 {
+		op.p1, op.p2 = op.p2, op.p1
+	}
+
+	return op
+}
+
 func TestBST(t *testing.T) {
 	suite.Run(t, new(BSTIntSuite))
 }
