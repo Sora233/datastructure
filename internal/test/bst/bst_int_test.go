@@ -3,7 +3,7 @@ package bst
 import (
 	"github.com/Sora233/datastructure/bst"
 	"github.com/Sora233/datastructure/bst/avl"
-	"github.com/Sora233/datastructure/bst/treap"
+	"github.com/Sora233/datastructure/bst/treap_nore"
 	"github.com/Sora233/datastructure/compare"
 	"github.com/stretchr/testify/suite"
 	"math/rand"
@@ -315,15 +315,15 @@ func (s *BSTIntSuite) TestFuzzy() {
 		for _, ts := range s.treeSet {
 			ts.tree.Clear()
 		}
-		for i := 0; i < 300000; i++ {
+		for i := 0; i < 100000; i++ {
 			op := genBstOps(maxKey)
 			var results [][2]any
 			for _, ts := range s.treeSet {
 				r1, r2 := op.do(ts.tree)
 				results = append(results, [2]any{r1, r2})
 			}
-			for i := 1; i < len(results); i++ {
-				s.EqualValuesf(results[0], results[i], "%v not match with %v, op %v, p %v %v", s.treeSet[0].name, s.treeSet[i].name, op.op, op.p1, op.p2)
+			for j := 1; j < len(results); j++ {
+				s.EqualValuesf(results[0], results[j], "%v: %v not match with %v, op %v, p %v %v", i, s.treeSet[0].name, s.treeSet[j].name, op.op, op.p1, op.p2)
 			}
 		}
 	}

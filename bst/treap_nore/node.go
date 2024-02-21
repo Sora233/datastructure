@@ -44,8 +44,6 @@ func (node *Node[T]) pushUp() {
 		return
 	}
 	node.size = node.getCount() + node.l.getSize() + node.r.getSize()
-	node.l.setFa(node)
-	node.r.setFa(node)
 }
 
 func (node *Node[T]) getSize() int {
@@ -74,43 +72,56 @@ func (node *Node[T]) getCount() int {
 
 // leftRotate operator a left-rotate
 // The right-child becomes the new root
-// return the new root
 func (node *Node[T]) leftRotate() *Node[T] {
 	if node == nil {
 		return nil
 	}
-	fa := node.fa
+
 	rNode := node.r
+	if node.fa != nil {
+		if node == node.fa.l {
+			node.fa.l = rNode
+		} else if node == node.fa.r {
+			node.fa.r = rNode
+		}
+	}
+	rNode.fa = node.fa
+
 	node.r = rNode.l
 	rNode.l.setFa(node)
+
 	rNode.l = node
-	node.setFa(rNode)
-	rNode.setFa(fa)
+	node.fa = rNode
 
 	node.pushUp()
 	rNode.pushUp()
-
 	return rNode
 }
 
 // rightRotate operator a right-rotate
 // The left-child becomes the new root
-// return the new root
 func (node *Node[T]) rightRotate() *Node[T] {
 	if node == nil {
 		return nil
 	}
-	fa := node.fa
 	lNode := node.l
+	if node.fa != nil {
+		if node == node.fa.l {
+			node.fa.l = lNode
+		} else if node == node.fa.r {
+			node.fa.r = lNode
+		}
+	}
+	lNode.fa = node.fa
+
 	node.l = lNode.r
 	lNode.r.setFa(node)
+
 	lNode.r = node
-	node.setFa(lNode)
-	lNode.setFa(fa)
+	node.fa = lNode
 
 	node.pushUp()
 	lNode.pushUp()
-
 	return lNode
 }
 

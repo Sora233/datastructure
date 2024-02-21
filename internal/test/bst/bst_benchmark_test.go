@@ -6,6 +6,7 @@ import (
 	"github.com/Sora233/datastructure/bst"
 	"github.com/Sora233/datastructure/bst/avl"
 	"github.com/Sora233/datastructure/bst/treap"
+	treap2 "github.com/Sora233/datastructure/bst/treap_nore"
 	"github.com/Sora233/datastructure/compare"
 	"math/rand"
 	"testing"
@@ -122,6 +123,10 @@ func BenchmarkBSTInt(b *testing.B) {
 		{
 			name: "treap-simple-int",
 			tree: treap.New[int](compare.OrderedLessCompareF[int](), treap.WithAllocator[int](allocator.NewSimpleAllocator[treap.Node[int]]())),
+		},
+		{
+			name: " treap-nore-int`",
+			tree: treap2.New[int](compare.OrderedLessCompareF[int](), treap2.WithAllocator[int](allocator.NewSimpleAllocator[treap2.Node[int]]())),
 		},
 		{
 			name: "avl-int",

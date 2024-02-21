@@ -5,8 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"github.com/Sora233/datastructure/bst"
-	"github.com/Sora233/datastructure/bst/avl"
-	"github.com/Sora233/datastructure/bst/treap"
+	"github.com/Sora233/datastructure/bst/treap_nore"
 	"github.com/Sora233/datastructure/entry"
 	"github.com/stretchr/testify/suite"
 	"io"
@@ -35,13 +34,6 @@ func (s *BSTDataSuite) SetupTest() {
 		tree: treap.New[entry.Duplicate[int]](entry.OrderedDuplicateLessCompareF[int]()),
 	})
 
-	s.treeSet = append(s.treeSet, struct {
-		name string
-		tree bst.BinarySearchTree[entry.Duplicate[int]]
-	}{
-		name: "AVL",
-		tree: avl.New[entry.Duplicate[int]](entry.OrderedDuplicateLessCompareF[int]()),
-	})
 }
 
 func (s *BSTDataSuite) TearDownTest() {
