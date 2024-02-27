@@ -56,20 +56,24 @@ func (t *treeSet[T]) Items() func(yield func(T) bool) {
 	}
 }
 
-func NewSet[T compare.Ordered]() TreeSet[T] {
-	return AsSet[T](avl.New[T](compare.OrderedLessCompareF[T]()))
+func New[T compare.Ordered]() TreeSet[T] {
+	return NewWithCompare[T](compare.OrderedLessCompareF[T]())
 }
 
-func NewSetWithLess[T any](less compare.Less[T]) TreeSet[T] {
-	return AsSet[T](avl.New[T](compare.LessF[T](less)))
+func NewWithLesser[T interface{ Less(T) bool }]() TreeSet[T] {
+	return NewWithCompare[T](compare.LesserF[T]())
 }
 
-func NewSetWithCompare[T any](cmp compare.ICompare[T]) TreeSet[T] {
-	return AsSet[T](avl.New[T](cmp))
+func NewWithLessKeyBy[PK interface{ *K }, K any, O compare.Ordered](keyBy func(PK) O) TreeSet[PK] {
+	return NewWithCompare[PK](compare.WithLessOrderedKey[PK](keyBy))
 }
 
-// AsSet Create a TreeSet base on the BinarySearchTree
-func AsSet[T any](tree bst.BinarySearchTree[T]) TreeSet[T] {
+func NewWithCompare[T any](cmp compare.ICompare[T]) TreeSet[T] {
+	return As[T](avl.New[T](cmp))
+}
+
+// As Create a TreeSet base on the BinarySearchTree
+func As[T any](tree bst.BinarySearchTree[T]) TreeSet[T] {
 	s := &treeSet[T]{
 		tree: tree,
 	}

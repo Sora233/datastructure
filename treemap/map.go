@@ -94,30 +94,26 @@ func (t *treeMap[K, V]) RankNth(n int) (key K, value V, exists bool) {
 	return
 }
 
-func NewMap[K compare.Ordered, V any]() TreeMap[K, V] {
-	return AsMap[K, V](avl.New[entry.KV[K, V]](entry.OrderedKeyLessCompareF[K, V]()))
+func New[K compare.Ordered, V any]() TreeMap[K, V] {
+	return NewWithCompare[K, V](compare.OrderedLessCompareF[K]())
 }
 
-func NewMapWithLess[K any, V any](less compare.Less[K]) TreeMap[K, V] {
-	return AsMap[K, V](
-		avl.New(
-			entry.KeyCompareWrapper[K, V](compare.LessF[K](less)),
-		),
-	)
+func NewWithLesser[K interface{ Less(K) bool }, V any]() TreeMap[K, V] {
+	return NewWithCompare[K, V](compare.LesserF[K]())
 }
 
-func NewMapWithCompare[K any, V any](keyCompare compare.ICompare[K]) TreeMap[K, V] {
-	return AsMap[K, V](
-		avl.New(
-			entry.KeyCompareWrapper[K, V](keyCompare),
-		),
-	)
+func NewWithLessKeyBy[PK interface{ *K }, V any, K any, O compare.Ordered](keyBy func(PK) O) TreeMap[PK, V] {
+	return NewWithCompare[PK, V](compare.WithLessOrderedKey[PK](keyBy))
 }
 
-// AsMap Create a TreeMap base on the BinarySearchTree
-func AsMap[K any, V any](tree bst.BinarySearchTree[entry.KV[K, V]]) TreeMap[K, V] {
+func NewWithCompare[K any, V any](keyCompare compare.ICompare[K]) TreeMap[K, V] {
+	return As[K, V](avl.New(entry.KeyCompareWrapper[K, V](keyCompare)))
+}
+
+// As Create a TreeMap base on the BinarySearchTree
+func As[K any, V any](tree bst.BinarySearchTree[entry.KV[K, V]]) TreeMap[K, V] {
 	if tree == nil {
-		panic("AsMap: tree is nil")
+		panic("As: tree is nil")
 	}
 	m := &treeMap[K, V]{
 		tree: tree,

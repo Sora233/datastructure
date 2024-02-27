@@ -83,8 +83,8 @@ func (s *MapIntStringSuite) SetupTest() {
 	s.maxKey = []int{1, 10, 100, 10000, 1000000, 100000000}
 	s.N = 100000
 	s.maps = append(s.maps, newStdMap[int, string]())
-	s.maps = append(s.maps, treemap.AsMap[int, string](treap.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
-	s.maps = append(s.maps, treemap.AsMap[int, string](avl.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
+	s.maps = append(s.maps, treemap.As[int, string](treap.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
+	s.maps = append(s.maps, treemap.As[int, string](avl.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())))
 }
 
 func (s *MapIntStringSuite) TearDownTest() {

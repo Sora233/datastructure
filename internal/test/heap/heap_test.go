@@ -2,7 +2,6 @@ package heap
 
 import (
 	"fmt"
-	"github.com/Sora233/datastructure/compare"
 	"github.com/Sora233/datastructure/heap/binaryheap"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -21,7 +20,7 @@ func TestHeap(t *testing.T) {
 }
 
 func TestXX(t *testing.T) {
-	h := binaryheap.New[int](compare.OrderedLessCompareF[int]())
+	h := binaryheap.New[int]()
 	for i := 10; i >= 1; i-- {
 		h.Insert(i)
 	}

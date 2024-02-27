@@ -15,3 +15,7 @@ func LessF[T any](less Less[T]) ICompare[T] {
 		}
 	})
 }
+
+func LesserF[T interface{ Less(T) bool }]() ICompare[T] {
+	return LessF[T](func(a, b T) bool { return a.Less(b) })
+}

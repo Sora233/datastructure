@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewMap(t *testing.T) {
-	m := NewMap[string, int]()
+	m := New[string, int]()
 	m.Put("a", 1)
 	m.Items()(func(s string, i int) bool {
 		fmt.Println(s, i)
@@ -18,24 +18,31 @@ type mystruct struct {
 	a int
 }
 
-func myless(a, b *mystruct) bool {
-	if a == nil && b == nil {
-		return false
-	} else if a == nil {
-		return true
-	} else if b == nil {
-		return false
-	} else {
-		return a.a < b.a
-	}
+func (a *mystruct) Less(b *mystruct) bool {
+	return a.a < b.a
 }
 
-func TestNewMapWithLess(t *testing.T) {
-	m := NewMapWithLess[*mystruct, int](myless)
-	m.Put(&mystruct{a: 20}, 2)
-	m.Put(&mystruct{a: 10}, 1)
+func TestNewMapWithLessKeyBy(t *testing.T) {
+	m2 := NewWithLessKeyBy[*mystruct, int](func(a *mystruct) int {
+		return a.a
+	})
 
-	m.Items()(func(m *mystruct, i int) bool {
+	m2.Put(&mystruct{1}, 1)
+	m2.Put(&mystruct{2}, 2)
+
+	m2.Items()(func(m *mystruct, i int) bool {
+		fmt.Println(m.a, i)
+		return true
+	})
+}
+
+func TestNewWithLesser(t *testing.T) {
+	m2 := NewWithLesser[*mystruct, int]()
+
+	m2.Put(&mystruct{1}, 1)
+	m2.Put(&mystruct{2}, 2)
+
+	m2.Items()(func(m *mystruct, i int) bool {
 		fmt.Println(m.a, i)
 		return true
 	})

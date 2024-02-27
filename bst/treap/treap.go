@@ -330,11 +330,14 @@ func (t *Treap[T]) insert(root *Node[T], data T, f nodeVisitFunc[T]) *Node[T] {
 		}
 	case compare.GT:
 		root.l = t.insert(root.l, data, f)
+		root.l.setFa(root)
 		if root.l.priority < root.priority {
 			root = root.rightRotate()
 		}
+		root.l.setFa(root)
 	case compare.LT:
 		root.r = t.insert(root.r, data, f)
+		root.r.setFa(root)
 		if root.r.priority < root.priority {
 			root = root.leftRotate()
 		}
@@ -353,8 +356,10 @@ func (t *Treap[T]) delete(root *Node[T], data T, f nodeConditionFunc[T]) *Node[T
 	switch r {
 	case compare.GT:
 		root.l = t.delete(root.l, data, f)
+		root.l.setFa(root)
 	case compare.LT:
 		root.r = t.delete(root.r, data, f)
+		root.r.setFa(root)
 	case compare.EQ:
 		if f != nil && !f(root) {
 			break
@@ -365,18 +370,23 @@ func (t *Treap[T]) delete(root *Node[T], data T, f nodeConditionFunc[T]) *Node[T
 			root = nil
 			break
 		} else if root.l != nil && root.r == nil {
+			root.l.setFa(root.getFa())
 			root = root.l
 			break
 		} else if root.l == nil && root.r != nil {
+			root.r.setFa(root.getFa())
 			root = root.r
+			root.setFa(root)
 			break
 		} else {
 			if root.l.priority < root.r.priority {
 				root = root.rightRotate()
 				root.r = t.delete(root.r, data, f)
+				root.r.setFa(root)
 			} else {
 				root = root.leftRotate()
 				root.l = t.delete(root.l, data, f)
+				root.l.setFa(root)
 			}
 			break
 		}

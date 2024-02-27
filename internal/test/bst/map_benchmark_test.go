@@ -37,11 +37,11 @@ func BenchmarkMap(b *testing.B) {
 		},
 		{
 			name: "treap",
-			tree: treemap.AsMap[int, string](treap.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())),
+			tree: treemap.As[int, string](treap.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())),
 		},
 		{
 			name: "avl",
-			tree: treemap.AsMap[int, string](avl.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())),
+			tree: treemap.As[int, string](avl.New[entry.KV[int, string]](entry.OrderedKeyLessCompareF[int, string]())),
 		},
 	}
 

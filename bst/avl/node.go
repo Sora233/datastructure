@@ -44,8 +44,6 @@ func (node *Node[T]) pushUp() {
 		return
 	}
 	node.size = node.getCount() + node.l.getSize() + node.r.getSize()
-	node.l.setFa(node)
-	node.r.setFa(node)
 	if node.l.getHeight() > node.r.getHeight() {
 		node.height = 1 + node.l.getHeight()
 	} else {

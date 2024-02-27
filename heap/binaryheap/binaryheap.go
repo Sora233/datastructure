@@ -3,6 +3,7 @@ package binaryheap
 import (
 	"github.com/Sora233/datastructure"
 	"github.com/Sora233/datastructure/compare"
+	"github.com/Sora233/datastructure/treemap"
 )
 
 type BinaryHeap[T any] struct {
@@ -10,17 +11,25 @@ type BinaryHeap[T any] struct {
 	cmp  compare.ICompare[T]
 	size int
 	// for DecreaseKey, we need locate the node for the given key.
-	m map[any]int
+	m treemap.TreeMap[T, int]
 }
 
-func New[T any](cmp compare.ICompare[T]) *BinaryHeap[T] {
-	tree := &BinaryHeap[T]{
+func New[T compare.Ordered]() *BinaryHeap[T] {
+	return NewWithCompare[T](compare.OrderedLessCompareF[T]())
+}
+
+func NewWithLesser[T interface{ Less(T) bool }]() *BinaryHeap[T] {
+	return NewWithCompare[T](compare.LesserF[T]())
+}
+
+func NewWithCompare[T any](cmp compare.ICompare[T]) *BinaryHeap[T] {
+	heap := &BinaryHeap[T]{
 		cmp:  cmp,
 		data: make([]T, 1),
-		m:    make(map[any]int),
+		m:    treemap.NewWithCompare[T, int](cmp),
 	}
 
-	return tree
+	return heap
 }
 
 // Clear clears the heap
@@ -28,7 +37,7 @@ func New[T any](cmp compare.ICompare[T]) *BinaryHeap[T] {
 func (b *BinaryHeap[T]) Clear() {
 	b.data = make([]T, 1)
 	b.size = 0
-	b.m = make(map[any]int)
+	b.m = treemap.NewWithCompare[T, int](b.cmp)
 }
 
 // Top returns the minimum data in the heap
@@ -106,7 +115,7 @@ func (b *BinaryHeap[T]) PopIf(f datastructure.ConditionFunc[T]) (success bool) {
 	b.swap(1, b.size)
 	b.size--
 	b.data = b.data[:b.size+1]
-	delete(b.m, res)
+	b.m.Delete(res)
 	b.down(1)
 	return
 }
@@ -114,14 +123,14 @@ func (b *BinaryHeap[T]) PopIf(f datastructure.ConditionFunc[T]) (success bool) {
 // DecreaseKey
 // Time Complex: O(logN)
 func (b *BinaryHeap[T]) DecreaseKey(oldKey T, change datastructure.ModifyFunc[T]) (success bool) {
-	if idx, found := b.m[oldKey]; found {
+	if idx, found := b.m.Get(oldKey); found {
 		newKey := change(b.data[idx])
 		if b.cmp.Compare(oldKey, newKey).LT() {
 			panic("binaryheap: DecreaseKey change with bigger key")
 		}
-		delete(b.m, oldKey)
+		b.m.Delete(oldKey)
 		b.data[idx] = newKey
-		b.m[b.data[idx]] = idx
+		b.m.Put(b.data[idx], idx)
 		b.up(idx)
 		success = true
 	}
@@ -136,8 +145,8 @@ func (b *BinaryHeap[T]) compare(idx1, idx2 int) compare.Result {
 
 func (b *BinaryHeap[T]) swap(idx1, idx2 int) {
 	b.data[idx1], b.data[idx2] = b.data[idx2], b.data[idx1]
-	b.m[b.data[idx1]] = idx1
-	b.m[b.data[idx2]] = idx2
+	b.m.Put(b.data[idx1], idx1)
+	b.m.Put(b.data[idx2], idx2)
 }
 
 func (b *BinaryHeap[T]) up(idx int) {
@@ -162,7 +171,7 @@ func (b *BinaryHeap[T]) down(idx int) {
 }
 
 func (b *BinaryHeap[T]) insert(data T, f func(idx int)) bool {
-	if idx, found := b.m[data]; found {
+	if idx, found := b.m.Get(data); found {
 		if f != nil {
 			f(idx)
 		}
@@ -170,7 +179,7 @@ func (b *BinaryHeap[T]) insert(data T, f func(idx int)) bool {
 	}
 	b.size++
 	b.data = append(b.data, data)
-	b.m[data] = b.size
+	b.m.Put(data, b.size)
 	b.up(b.size)
 	return true
 }

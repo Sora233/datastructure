@@ -285,7 +285,6 @@ func (t *AVL[T]) RangeE(end T, f datastructure.ConditionFunc[T]) {
 func (t *AVL[T]) newNode(data T) *Node[T] {
 	node := t.alloc.Allocate()
 	node.setVal(data, t.countableCheck)
-	node.height = 1
 	node.l = nil
 	node.r = nil
 	node.pushUp()
@@ -293,23 +292,30 @@ func (t *AVL[T]) newNode(data T) *Node[T] {
 }
 
 func (t *AVL[T]) fixBalance(root *Node[T]) *Node[T] {
+	fa := root.getFa()
 	if root.getFactor() < -1 {
 		if root.l.getFactor() < 0 {
 			// LL -> balance
 			root = root.rightRotate()
+			root.setFa(root)
 		} else {
 			// LR -> LL -> balance
 			root.l = root.l.leftRotate()
+			root.l.setFa(root)
 			root = root.rightRotate()
+			root.setFa(fa)
 		}
 	} else if root.getFactor() > 1 {
 		if root.r.getFactor() > 0 {
 			// RR -> balance
 			root = root.leftRotate()
+			root.setFa(fa)
 		} else {
 			// RL -> RR -> balance
 			root.r = root.r.rightRotate()
+			root.r.setFa(root)
 			root = root.leftRotate()
+			root.setFa(fa)
 		}
 	}
 	return root
@@ -327,8 +333,10 @@ func (t *AVL[T]) insert(root *Node[T], data T, f nodeVisitFunc[T]) *Node[T] {
 		}
 	case compare.GT:
 		root.l = t.insert(root.l, data, f)
+		root.l.setFa(root)
 	case compare.LT:
 		root.r = t.insert(root.r, data, f)
+		root.r.setFa(root)
 	default:
 		panic("impossible")
 	}
@@ -352,25 +360,31 @@ func (t *AVL[T]) delete(root *Node[T], data T, f nodeConditionFunc[T]) *Node[T] 
 		if root.l == nil && root.r == nil {
 			return nil
 		} else if root.l != nil && root.r == nil {
+			root.l.setFa(root.getFa())
 			root = root.l
 			break
 		} else if root.l == nil && root.r != nil {
+			root.r.setFa(root.getFa())
 			root = root.r
 			break
 		} else {
 			if root.getFactor() < 0 {
 				root = root.rightRotate()
 				root.r = t.delete(root.r, data, f)
+				root.r.setFa(root)
 			} else {
 				root = root.leftRotate()
 				root.l = t.delete(root.l, data, f)
+				root.l.setFa(root)
 			}
 			break
 		}
 	case compare.GT:
 		root.l = t.delete(root.l, data, f)
+		root.l.setFa(root)
 	case compare.LT:
 		root.r = t.delete(root.r, data, f)
+		root.r.setFa(root)
 	default:
 		panic("impossible")
 	}
